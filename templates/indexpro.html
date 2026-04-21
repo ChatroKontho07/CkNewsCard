@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatroKontho Card Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@600;700&family=Roboto:wght@900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 30px; }
+        .editor { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 100%; max-width: 550px; margin-bottom: 30px; }
+        .row { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #444; font-size: 14px; }
+        input[type="text"], input[type="file"], input[type="url"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        button { padding: 12px; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
+        
+        .btn-fetch { background: #673ab7; width: 100%; margin-top: 5px; }
+        .btn-gen { background: #1a73e8; }
+        .btn-down { background: #28a745; }
+        
+        canvas { border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); max-width: 100%; height: auto; background: #fff; }
+        .loading { color: #1a73e8; font-size: 12px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="editor">
+        <h2 style="margin-top:0; color: #333; text-align: center;">ছাত্র কন্ঠ কার্ড জেনারেটর</h2>
+        
+        <div class="row" style="background: #f0f0f0; padding: 10px; border-radius: 8px;">
+            <label>লিঙ্ক থেকে তথ্য নিন (Fetch from URL)</label>
+            <input type="url" id="newsUrl" placeholder="https://www.chatrokontho.nav.bd/...">
+            <button class="btn-fetch" onclick="fetchNewsData()">Fetch News Info</button>
+            <span id="loader" class="loading">পেজ স্ক্র্যাপ করা হচ্ছে...</span>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <div class="row">
+            <label>১. খবরের ছবি</label>
+            <input type="file" id="imageInput" accept="image/*">
+            <input type="hidden" id="remoteImageUrl">
+        </div>
+
+        <div class="row">
+            <label>২. শিরোনাম</label>
+            <input type="text" id="title" placeholder="এখানে হেডলাইন লিখুন...">
+        </div>
+
+        <div class="row">
+            <label>৩. তারিখ</label>
+            <input type="text" id="date">
+        </div>
+
+        <div class="button-group">
+            <button class="btn-gen" onclick="drawCanvas()">Update Preview</button>
+            <button class="btn-down" onclick="downloadCard()">Download PNG</button>
+        </div>
+    </div>
+
+    <canvas id="newsCanvas" width="1080" height="1080"></canvas>
+
+    <script>
+        const today = new Date();
+        const formattedDate = today.toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('date').value = formattedDate;
+        
+        const logoImg = new Image();
+        logoImg.src = '/static/logo.png'; // Make sure your logo is in a 'static' folder
+
+        async function fetchNewsData() {
+            const url = document.getElementById('newsUrl').value;
+            const loader = document.getElementById('loader');
+            if(!url) return alert("দয়া করে লিঙ্ক দিন");
+
+            loader.style.display = "block";
+
+            try {
+                const response = await fetch('/fetch-news', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: url})
+                });
+                const data = await response.json();
+
+                if(data.success) {
+                    document.getElementById('title').value = data.title;
+                    document.getElementById('remoteImageUrl').value = data.image;
+                    drawCanvas();
+                } else {
+                    alert("তথ্য পাওয়া যায়নি। ম্যানুয়ালি চেষ্টা করুন।");
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                loader.style.display = "none";
+            }
+        }
+
+        function drawCanvas() {
+            const canvas = document.getElementById('newsCanvas');
+            const ctx = canvas.getContext('2d');
+            const titleText = document.getElementById('title').value || "আপনার শিরোনাম এখানে লিখুন";
+            const dateText = document.getElementById('date').value;
+            const imageInput = document.getElementById('imageInput');
+            const remoteUrl = document.getElementById('remoteImageUrl').value;
+
+            ctx.fillStyle = "#F6F2E9"; 
+            ctx.fillRect(0, 0, 1080, 1080);
+
+            const finalizeDrawing = (mainImg) => {
+                if (mainImg) {
+                    const imgAspect = mainImg.width / mainImg.height;
+                    const targetAspect = 1080 / 540;
+                    let dw, dh, dx = 0, dy = 0;
+                    if (imgAspect > targetAspect) {
+                        dh = 540; dw = 540 * imgAspect;
+                        dx = -(dw - 1080) / 2;
+                    } else {
+                        dw = 1080; dh = 1080 / imgAspect;
+                        dy = -(dh - 540) / 2;
+                    }
+                    ctx.save();
+                    ctx.beginPath(); ctx.rect(0, 0, 1080, 540); ctx.clip();
+                    ctx.drawImage(mainImg, dx, dy, dw, dh);
+                    ctx.restore();
+                }
+
+                // Title Split logic (Red & Blue)
+                ctx.textAlign = "center";
+                const words = titleText.split(' ');
+                const mid = Math.ceil(words.length / 2);
+                const line1 = words.slice(0, mid).join(' ');
+                const line2 = words.slice(mid).join(' ');
+
+                ctx.font = "bold 62px 'Hind Siliguri'";
+                ctx.fillStyle = "#A01A1A";
+                ctx.fillText(line1, 540, 665);
+                ctx.fillStyle = "#12237A";
+                ctx.fillText(line2, 540, 755);
+
+                // Logo/Footer
+                ctx.fillStyle = "#006400";
+                ctx.fillRect(340, 875, 400, 80);
+                ctx.fillStyle = "white";
+                ctx.font = "bold 40px 'Hind Siliguri'";
+                ctx.fillText("ছাত্র কন্ঠ", 540, 930);
+
+                ctx.fillStyle = "#555";
+                ctx.font = "38px 'Hind Siliguri'";
+                ctx.fillText(dateText, 540, 1030);
+            };
+
+            // Image Priority: Uploaded File > Scraped URL
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => finalizeDrawing(img);
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(imageInput.files[0]);
+            } else if (remoteUrl) {
+                const img = new Image();
+                img.crossOrigin = "Anonymous"; 
+                img.onload = () => finalizeDrawing(img);
+                img.onerror = () => finalizeDrawing(null);
+                img.src = remoteUrl;
+            } else {
+                finalizeDrawing(null);
+            }
+        }
+
+        function downloadCard() {
+            const canvas = document.getElementById('newsCanvas');
+            const link = document.createElement('a');
+            link.download = `NewsCard.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        }
+
+        window.onload = () => { setTimeout(drawCanvas, 500); };
+    </script>
+</body>
+</html>
+
