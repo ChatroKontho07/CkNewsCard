@@ -15,6 +15,12 @@ def index():
 def indexpro():
     return render_template('indexpro.html')
 
+
+@app.route('/do_pro')
+def indexpro1():
+    return render_template('indexpro1.html')
+
+ 
 # Updated Fetch Route: Automatically wraps the image in a proxy URL
 @app.route('/fetch-news', methods=['POST'])
 def fetch_news():
@@ -82,4 +88,5 @@ if __name__ == '__main__':
     # Ensure your project folder has 'templates' for index.html 
     # and 'static' for logo.png
     app.run(debug=True, port=5000)
+
 

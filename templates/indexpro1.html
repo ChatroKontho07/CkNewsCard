@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatroKontho Pro Card Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #006400;
+            --red: #A01A1A;
+            --blue: #12237A;
+            --gold: #c8a84b;
+            --bg: #f0ece0;
+            --card-bg: #ffffff;
+            --border: #ddd5c0;
+            --text: #2a2a2a;
+            --muted: #777;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 20% 10%, rgba(0,100,0,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 90%, rgba(18,35,122,0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* ── Header ── */
+        .site-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+        .site-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            color: var(--green);
+            letter-spacing: 1px;
+        }
+        .site-header h1 span { color: var(--red); }
+        .site-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .header-rule {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--red), var(--blue));
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+
+        /* ── Layout ── */
+        .layout {
+            display: flex;
+            gap: 32px;
+            width: 100%;
+            max-width: 1180px;
+            align-items: flex-start;
+        }
+
+        /* ── Editor Panel ── */
+        .editor {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 24px;
+            width: 400px;
+            flex-shrink: 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 30px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Section Blocks ── */
+        .section-block {
+            background: #faf8f4;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .section-block label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Hind Siliguri', sans-serif;
+            color: var(--text);
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(0,100,0,0.1);
+        }
+
+        /* File Upload */
+        .file-upload-wrap {
+            position: relative;
+        }
+        input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        .file-upload-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border: 1.5px dashed #bbb;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--muted);
+            background: #fff;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .file-upload-wrap:hover .file-upload-btn {
+            border-color: var(--green);
+            color: var(--green);
+        }
+        #file-label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+            display: block;
+        }
+
+        /* Fetch Row */
+        .fetch-row {
+            display: flex;
+            gap: 8px;
+        }
+        .fetch-row input { flex: 1; }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            border-radius: 8px;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+            color: #fff;
+        }
+        .btn:hover { transform: translateY(-1px); opacity: 0.93; }
+        .btn:active { transform: translateY(0); }
+
+        .btn-fetch {
+            padding: 10px 14px;
+            font-size: 13px;
+            background: var(--blue);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .btn-gen {
+            padding: 13px;
+            font-size: 15px;
+            background: linear-gradient(135deg, var(--green), #008000);
+            box-shadow: 0 4px 14px rgba(0,100,0,0.25);
+        }
+        .btn-down {
+            padding: 13px;
+            font-size: 15px;
+            background: linear-gradient(135deg, var(--red), #c02020);
+            box-shadow: 0 4px 14px rgba(160,26,26,0.25);
+        }
+
+        /* Loader */
+        .loader-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            min-height: 20px;
+        }
+        .spinner {
+            width: 14px; height: 14px;
+            border: 2px solid #ddd;
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+            flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loader-text {
+            font-size: 12px;
+            color: var(--blue);
+            display: none;
+        }
+        #fetch-success {
+            font-size: 12px;
+            color: var(--green);
+            display: none;
+        }
+
+        /* Canvas Preview */
+        .preview-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .preview-label {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        canvas {
+            border-radius: 10px;
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.06),
+                0 20px 60px rgba(0,0,0,0.14);
+            max-width: 100%;
+            height: auto;
+            display: block;
+            background: #fff;
+            transition: box-shadow 0.3s;
+        }
+        canvas:hover {
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.1),
+                0 28px 80px rgba(0,0,0,0.2);
+        }
+        .footer-badge {
+            font-size: 11px;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 860px) {
+            .layout { flex-direction: column; align-items: center; }
+            .editor { width: 100%; max-width: 550px; position: static; }
+            .preview-wrap { width: 100%; max-width: 550px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="site-header">
+        <h1>ছাত্র <span>কন্ঠ</span> Pro</h1>
+        <p>Card Generator &mdash; Pro Edition</p>
+        <div class="header-rule"></div>
+    </div>
+
+    <div class="layout">
+
+        <!-- ── Editor ── -->
+        <div class="editor">
+            <div class="panel-title">কার্ড তৈরি করুন</div>
+
+            <!-- Fetch from URL -->
+            <div class="section-block">
+                <label>🔗 লিঙ্ক থেকে তথ্য আনুন</label>
+                <div class="fetch-row">
+                    <input type="url" id="newsUrl" placeholder="https://www.chatrokontho.nav.bd/...">
+                    <button class="btn btn-fetch" onclick="fetchNewsData()">Fetch</button>
+                </div>
+                <div class="loader-row">
+                    <div class="spinner" id="spinner"></div>
+                    <span id="loader-text">স্ক্র্যাপ করা হচ্ছে…</span>
+                    <span id="fetch-success">✓ তথ্য পাওয়া গেছে!</span>
+                </div>
+            </div>
+
+            <!-- Image -->
+            <div class="section-block">
+                <label>📷 খবরের ছবি</label>
+                <div class="file-upload-wrap">
+                    <div class="file-upload-btn">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        ছবি আপলোড করুন
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" onchange="handleFileChange(this)">
+                </div>
+                <span id="file-label">কোনো ফাইল নির্বাচিত হয়নি</span>
+                <input type="hidden" id="remoteImageUrl">
+            </div>
+
+            <!-- Title -->
+            <div class="section-block">
+                <label>✏️ শিরোনাম</label>
+                <input type="text" id="title" placeholder="এখানে হেডলাইন লিখুন…" oninput="scheduleRedraw()">
+            </div>
+
+            <!-- Date -->
+            <div class="section-block">
+                <label>📅 তারিখ</label>
+                <input type="text" id="date" oninput="scheduleRedraw()">
+            </div>
+
+            <!-- Actions -->
+            <div class="action-row">
+                <button class="btn btn-gen" onclick="drawCanvas()">⟳ Update Preview</button>
+                <button class="btn btn-down" onclick="downloadCard()">↓ Download PNG</button>
+            </div>
+        </div>
+
+        <!-- ── Preview ── -->
+        <div class="preview-wrap">
+            <span class="preview-label">Live Preview</span>
+            <canvas id="newsCanvas" width="1080" height="1080"></canvas>
+            <span class="footer-badge">Powered by ChatroKontho Engine</span>
+        </div>
+
+    </div>
+
+    <script>
+        // ── Default date in Bengali ──
+        const today = new Date();
+        document.getElementById('date').value = today.toLocaleDateString('bn-BD', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+
+        // ── Logo: load with explicit flag ──
+        const logoImg = new Image();
+        let logoReady = false;
+
+        logoImg.onload = () => {
+            logoReady = true;
+            drawCanvas(); // redraw once logo arrives
+        };
+        logoImg.onerror = () => {
+            logoReady = false;
+            drawCanvas();
+        };
+        logoImg.src = '/static/logo1.png';
+
+        // ── Debounced redraw ──
+        let redrawTimer = null;
+        function scheduleRedraw() {
+            clearTimeout(redrawTimer);
+            redrawTimer = setTimeout(drawCanvas, 280);
+        }
+
+        // ── File change ──
+        function handleFileChange(input) {
+            document.getElementById('remoteImageUrl').value = '';
+            const label = document.getElementById('file-label');
+            label.textContent = input.files[0] ? input.files[0].name : 'কোনো ফাইল নির্বাচিত হয়নি';
+            drawCanvas();
+        }
+
+        // ── Fetch news ──
+        async function fetchNewsData() {
+            const url = document.getElementById('newsUrl').value.trim();
+            if (!url) return alert("দয়া করে লিঙ্ক দিন");
+
+            const spinner    = document.getElementById('spinner');
+            const loaderText = document.getElementById('loader-text');
+            const successMsg = document.getElementById('fetch-success');
+
+            spinner.style.display    = 'block';
+            loaderText.style.display = 'block';
+            successMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/fetch-news', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('title').value = data.title;
+                    document.getElementById('remoteImageUrl').value = data.image;
+                    document.getElementById('imageInput').value = '';
+                    document.getElementById('file-label').textContent = 'কোনো ফাইল নির্বাচিত হয়নি';
+                    drawCanvas();
+                    successMsg.style.display = 'block';
+                    setTimeout(() => { successMsg.style.display = 'none'; }, 3000);
+                } else {
+                    alert("তথ্য পাওয়া যায়নি। ম্যানুয়ালি চেষ্টা করুন।");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("নেটওয়ার্ক সমস্যা হয়েছে।");
+            } finally {
+                spinner.style.display    = 'none';
+                loaderText.style.display = 'none';
+            }
+        }
+
+        // ── Wrap text helper ──
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            let lineY = y;
+            const lines = [];
+
+            for (let i = 0; i < words.length; i++) {
+                const testLine = line + (line ? ' ' : '') + words[i];
+                if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+                    lines.push({ text: line, y: lineY });
+                    line = words[i];
+                    lineY += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push({ text: line, y: lineY });
+            return lines;
+        }
+
+        // ── Main draw ──
+        function drawCanvas() {
+            const canvas    = document.getElementById('newsCanvas');
+            const ctx       = canvas.getContext('2d');
+            const titleText = document.getElementById('title').value || "আপনার শিরোনাম এখানে লিখুন";
+            const dateText  = document.getElementById('date').value;
+            const imageInput  = document.getElementById('imageInput');
+            const remoteUrl   = document.getElementById('remoteImageUrl').value;
+
+            const W = 1080, H = 1080;
+            const IMG_H = 540; // top image zone
+
+            const finalizeDrawing = (mainImg) => {
+                // ── 1. Background ──
+                ctx.fillStyle = "#F5F1E8";
+                ctx.fillRect(0, 0, W, H);
+
+                // Subtle texture lines
+                ctx.save();
+                ctx.globalAlpha = 0.03;
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < H; i += 6) {
+                    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(W, i); ctx.stroke();
+                }
+                ctx.restore();
+
+                // ── 2. News Image ──
+                if (mainImg) {
+                    const imgAspect    = mainImg.width / mainImg.height;
+                    const targetAspect = W / IMG_H;
+                    let dw, dh, dx = 0, dy = 0;
+
+                    if (imgAspect > targetAspect) {
+                        dh = IMG_H; dw = IMG_H * imgAspect;
+                        dx = -(dw - W) / 2;
+                    } else {
+                        dw = W; dh = W / imgAspect;
+                        dy = -(dh - IMG_H) / 2;
+                    }
+
+                    ctx.save();
+                    ctx.beginPath(); ctx.rect(0, 0, W, IMG_H); ctx.clip();
+                    ctx.drawImage(mainImg, dx, dy, dw, dh);
+                    ctx.restore();
+
+                    // Bottom vignette on image
+                    const grad = ctx.createLinearGradient(0, IMG_H - 100, 0, IMG_H);
+                    grad.addColorStop(0, 'rgba(245,241,232,0)');
+                    grad.addColorStop(1, 'rgba(245,241,232,0.6)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, IMG_H - 100, W, 100);
+                }
+
+                // ── 3. Decorative separator ──
+                const sepY = IMG_H + 18;
+                // Left red bar
+                ctx.fillStyle = '#A01A1A';
+                ctx.fillRect(80, sepY, 340, 5);
+                // Center diamond
+                ctx.save();
+                ctx.translate(540, sepY + 2.5);
+                ctx.rotate(Math.PI / 4);
+                ctx.fillStyle = '#c8a84b';
+                ctx.fillRect(-5, -5, 10, 10);
+                ctx.restore();
+                // Right blue bar
+                ctx.fillStyle = '#12237A';
+                ctx.fillRect(660, sepY, 340, 5);
+
+                // ── 4. Title text with smart wrapping ──
+                const maxTitleWidth = 920;
+                const titleLineH    = 80;
+                let fontSize        = 64;
+
+                // Auto-shrink font to fit
+                ctx.font = `bold ${fontSize}px 'Hind Siliguri'`;
+                while (fontSize > 36) {
+                    ctx.font = `bold ${fontSize}px 'Hind Siliguri'`;
+                    const lines = wrapText(ctx, titleText, 540, 0, maxTitleWidth, titleLineH);
+                    const totalH = (lines.length - 1) * titleLineH;
+                    if (totalH <= titleLineH * 2.5) break; // max 3 lines
+                    fontSize -= 4;
+                }
+
+                ctx.font    = `bold ${fontSize}px 'Hind Siliguri'`;
+                ctx.textAlign = 'center';
+
+                const titleStartY = IMG_H + 80;
+                const lines = wrapText(ctx, titleText, 540, titleStartY, maxTitleWidth, fontSize + 18);
+
+                lines.forEach((line, i) => {
+                    // Alternate red / blue
+                    ctx.fillStyle = (i % 2 === 0) ? '#A01A1A' : '#12237A';
+                    ctx.fillText(line.text, 540, line.y);
+                });
+
+                // ── 5. Logo / Brand Box ──
+                const boxW = 420, boxH = 76;
+                const boxX = 540 - boxW / 2;
+                const boxY = 880;
+
+                // Shadow
+                ctx.save();
+                ctx.shadowColor   = 'rgba(0,0,0,0.25)';
+                ctx.shadowBlur    = 16;
+                ctx.shadowOffsetY = 6;
+                ctx.fillStyle = '#006400';
+                ctx.beginPath();
+                roundRect(ctx, boxX, boxY, boxW, boxH, 10);
+                ctx.fill();
+                ctx.restore();
+
+                // Gold border
+                ctx.strokeStyle = '#c8a84b';
+                ctx.lineWidth   = 2.5;
+                ctx.beginPath();
+                roundRect(ctx, boxX, boxY, boxW, boxH, 10);
+                ctx.stroke();
+
+                if (logoReady) {
+                    const logoAspect = logoImg.naturalWidth / logoImg.naturalHeight;
+                    const lh = boxH - 20;
+                    const lw = lh * logoAspect;
+                    ctx.drawImage(logoImg, 540 - lw / 2, boxY + 10, lw, lh);
+                } else {
+                    ctx.fillStyle     = '#fff';
+                    ctx.font          = `bold 40px 'Hind Siliguri'`;
+                    ctx.textAlign     = 'center';
+                    ctx.fillText('ছাত্র কন্ঠ', 540, boxY + 52);
+                }
+
+                // ── 6. Date ──
+                ctx.fillStyle = '#666';
+                ctx.font      = `500 34px 'Hind Siliguri'`;
+                ctx.textAlign = 'center';
+                ctx.fillText(dateText, 540, 1010);
+
+                // ── 7. Corner accents ──
+                drawCornerAccent(ctx, 40, 560, 0);
+                drawCornerAccent(ctx, W - 40, 560, 1);
+            };
+
+            // ── Image loading priority ──
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img   = new Image();
+                    img.onload  = () => finalizeDrawing(img);
+                    img.src     = e.target.result;
+                };
+                reader.readAsDataURL(imageInput.files[0]);
+            } else if (remoteUrl) {
+                const img         = new Image();
+                img.crossOrigin   = 'Anonymous';
+                img.onload        = () => finalizeDrawing(img);
+                img.onerror       = () => finalizeDrawing(null);
+                img.src           = remoteUrl;
+            } else {
+                finalizeDrawing(null);
+            }
+        }
+
+        // ── Rounded rect helper (no Path2D for compat) ──
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y,     x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x,     y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x,     y,     x + r, y);
+            ctx.closePath();
+        }
+
+        // ── Small ornamental corner L-bracket ──
+        function drawCornerAccent(ctx, x, y, flip) {
+            ctx.save();
+            ctx.strokeStyle = '#c8a84b';
+            ctx.lineWidth   = 3;
+            ctx.lineCap     = 'square';
+            const s = 28;
+            const d = flip ? -1 : 1;
+            ctx.beginPath();
+            ctx.moveTo(x + d * s, y - s);
+            ctx.lineTo(x, y - s);
+            ctx.lineTo(x, y + s);
+            ctx.lineTo(x + d * s, y + s);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // ── Download ──
+        function downloadCard() {
+            drawCanvas();
+            setTimeout(() => {
+                const canvas  = document.getElementById('newsCanvas');
+                const dateStr = document.getElementById('date').value.replace(/\s/g, '_');
+                const link    = document.createElement('a');
+                link.download = `ChatroKontho_Pro_${dateStr}.png`;
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+            }, 400);
+        }
+
+        // ── Initial draw ──
+        window.onload = () => {
+            drawCanvas();
+        };
+    </script>
+</body>
+</html>
